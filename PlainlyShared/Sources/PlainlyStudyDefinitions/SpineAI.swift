@@ -35,6 +35,7 @@ extension Study {
                     title: nil,
                     instructions: "Ask SpineAI to explain your most recent MRI or X-ray report in plain language, then ask any follow-up questions about what the findings mean for your pain and function.",
                     assistantMessagesLimit: 2...5,
+                    isSkippable: true,
                     questions: [
                         effectivenessQuestion,
                         .freeText("What surprised you about the app’s answer, either positively or negatively?", isOptional: true)
@@ -45,20 +46,22 @@ extension Study {
                     title: nil,
                     instructions: "Ask SpineAI what treatment options exist for your specific condition, including the non-surgical ones, and have it compare the pros and cons of each for your situation.",
                     assistantMessagesLimit: 1...5,
+                    isSkippable: true,
                     questions: [effectivenessQuestion]
                 ),
                 // The REDCap baseline shows its procedure and recovery items only when baseline
                 // gate question G1 ("Is surgery currently one of the options being discussed for
                 // your spine condition?") is answered "Yes" or "I am not sure". Tasks cannot
-                // branch or be skipped, and each needs a reply from SpineAI, so both tasks are
-                // always shown: the first carries a fallback, and the recovery task follows up on
-                // whichever treatment was asked about. They say "surgery" like those items, and
+                // branch, so both tasks are always shown, and a participant can skip one that does
+                // not apply to them: the first carries a fallback, and the recovery task follows up
+                // on whichever treatment was asked about. They say "surgery" like those items, and
                 // do not assume that a procedure has been recommended.
                 Task(
                     id: "2",
                     title: nil,
                     instructions: "Ask SpineAI what surgery for your condition would involve and what the risks would be for someone like you. If surgery is not being considered for you, ask about the treatment you are most likely to have, such as an injection or physical therapy.",
                     assistantMessagesLimit: 1...5,
+                    isSkippable: true,
                     questions: [effectivenessQuestion]
                 ),
                 Task(
@@ -66,6 +69,7 @@ extension Study {
                     title: nil,
                     instructions: "Ask SpineAI what recovery could look like week by week after the treatment you just asked about, and when you could return to the activities that matter to you.",
                     assistantMessagesLimit: 1...5,
+                    isSkippable: true,
                     questions: [effectivenessQuestion]
                 ),
                 Task(
@@ -73,6 +77,7 @@ extension Study {
                     title: nil,
                     instructions: "Ask SpineAI how to manage your current pain and medications — how to take them, what side effects to watch for, and what to do if the pain isn’t improving as expected.",
                     assistantMessagesLimit: 1...5,
+                    isSkippable: true,
                     questions: [effectivenessQuestion]
                 ),
                 // The study asks about neither insurance nor second opinions, in a task or in the
@@ -83,6 +88,7 @@ extension Study {
                     title: nil,
                     instructions: "Tell SpineAI about anything that worries you about your condition or a possible operation, and ask what could help you cope.",
                     assistantMessagesLimit: 1...5,
+                    isSkippable: true,
                     // The effectiveness question asks about a health question, which fits a
                     // conversation about worries poorly, so this task also rates the acknowledgement.
                     questions: [
@@ -96,6 +102,7 @@ extension Study {
                     title: nil,
                     instructions: "Before we end our session, feel free to ask the app any medical questions you might have related to your spine problem or symptoms.",
                     assistantMessagesLimit: 1...10,
+                    isSkippable: true,
                     questions: freeExplorationQuestions
                 ),
                 Task(

@@ -174,6 +174,7 @@ final class StudyChatViewModel: Sendable {
     private let studyStartTime = Date.now
     private var taskStartTimes: [Study.Task.ID: Date] = [:]
     private var taskEndTimes: [Study.Task.ID: Date] = [:]
+    private var skippedTaskIds: Set<Study.Task.ID> = []
     private var assistantMessagesByTask = LimitedCollectionDictionary<Study.Task.ID, String>()
     @ObservationIgnored private var voicePresenter: (any VoicePresenter)?
     // How long the chat was when the voice conversation was made; more chat since means a new hand-over.
@@ -247,6 +248,7 @@ final class StudyChatViewModel: Sendable {
         inProgressStudy.responses.removeAll()
         taskStartTimes.removeAll()
         taskEndTimes.removeAll()
+        skippedTaskIds.removeAll()
         navigationState = .introduction
         // The conversation lives on the interpretation module, which outlasts this view model, so clearing the
         // study's own state is not what the participant was told would happen.
@@ -362,6 +364,22 @@ final class StudyChatViewModel: Sendable {
             return
         }
     }
+
+    /// Ends the current task without its chat or its questions and starts the next one.
+    ///
+    /// Not while an answer is arriving: it would be counted towards the next task.
+    func skipCurrentTask() {
+        guard isCurrentTaskSkippable, !isProcessing, let task = currentTask else {
+            return
+        }
+        taskEndTimes[task.id] = .now
+        skippedTaskIds.insert(task.id)
+        // The study outlives the session: answers from an earlier one would otherwise be reported for this skip.
+        inProgressStudy.responses[task.id] = nil
+        // The next task decides which sheet it opens with, if any.
+        presentedSheet = nil
+        advanceToNextTask()
+    }
 }
 
 
@@ -436,6 +454,17 @@ extension StudyChatViewModel {
         }
         // Disable if the minimum number of messages is not met
         return isMinAssistantMessagesReached
+    }
+
+    /// Whether the participant can skip the current task instead of chatting through it.
+    ///
+    /// Only while the task still holds them back: once it has the answers it asks for, Next Task moves on and its
+    /// questions follow, and skipping then would only drop them.
+    var isCurrentTaskSkippable: Bool {
+        guard case let .task(task, _, _, taskState: .chatting) = navigationState, task.isSkippable else {
+            return false
+        }
+        return hasConfiguredCapacityForCurrentTask && !isMinAssistantMessagesReached
     }
 }
 
@@ -775,7 +804,8 @@ extension StudyChatViewModel {
                 startedAt: taskStartTime,
                 completedAt: taskEndTime,
                 duration: taskEndTime.timeIntervalSince(taskStartTime),
-                questions: surveyQuestions(for: task)
+                questions: surveyQuestions(for: task),
+                skipped: skippedTaskIds.contains(task.id)
             ))
         })
         return timeline.sorted()

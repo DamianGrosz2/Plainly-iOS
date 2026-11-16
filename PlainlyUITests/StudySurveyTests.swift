@@ -9,7 +9,8 @@
 import XCTest
 
 
-/// A task's questions stand between the participant and the next task, however they leave the survey sheet.
+/// A task's questions stand between the participant and the next task, however they leave the survey sheet, unless the
+/// participant skips a task that does not apply to them.
 ///
 /// Runs through the Firebase emulators like the end-to-end tests: a chat cannot open without a backend.
 @MainActor
@@ -54,6 +55,40 @@ final class StudySurveyTests: XCTestCase {
             question.waitForExistence(timeout: 10),
             "Next Task did not bring back the questions the participant closed without answering."
         )
+    }
+
+    /// A SpineAI task that does not apply to the participant used to need a message before Next Task would move on.
+    func testSkippingATaskMovesOnWithoutItsQuestions() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--resetPreferences",
+            "--skipOnboarding",
+            "--resetRetainedReports",
+            "--mode",
+            "study:edu.stanford.plainly.spineAI",
+            "--skipInitialQuestionnaire",
+            "--useFirebaseEmulator",
+            "--disableHealthRecords"
+        ]
+        app.launch()
+        let startSession = app.buttons["Start Session"]
+        XCTAssertTrue(startSession.waitForExistence(timeout: 15), "The study did not offer to start a session.")
+        startSession.tap()
+        XCTAssertTrue(app.staticTexts["Task 1"].waitForExistence(timeout: 30), "No instructions for the first task.")
+
+        // Skipping waits for the opening answer, which would otherwise be counted towards the next task.
+        let skip = app.buttons["Skip This Task"]
+        let enabled = NSPredicate(format: "exists == true AND isEnabled == true")
+        let canSkip = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: enabled, object: skip)], timeout: 30)
+        XCTAssertEqual(canSkip, .completed, "The first task offered no way to skip it.")
+        skip.tap()
+        let confirmation = app.alerts["Skip Task 1?"]
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 5), "Skipping did not ask for confirmation.")
+        confirmation.buttons["Skip Task"].tap()
+
+        XCTAssertTrue(app.staticTexts["Task 2"].waitForExistence(timeout: 10), "Skipping did not move on.")
+        let firstTaskQuestion = "How effective was the app in helping to answer your spine-related health question?"
+        XCTAssertFalse(app.staticTexts[firstTaskQuestion].exists, "Skipping presented the skipped task's questions.")
     }
 
     private func launchApp() -> XCUIApplication {

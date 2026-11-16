@@ -11,6 +11,8 @@
 Every build up to Plainly-iOS#47 let a participant close a task's questionnaire and tap Next Task, which moved on to
 the next task without any answers and, past the last task, uploaded the report without them. A skipped task leaves no
 `surveyTask` event in the report's timeline, so a report misses answers when a task that has questions has no event.
+A task the participant skipped on purpose with Skip This Task does have one, marked `"skipped": true`, so it is not
+counted as missing.
 
 Which tasks have questions depends on the study and on the build: study definitions changed many times. The file
 `find_skipped_surveys.definitions.json` next to this script holds every study definition that shipped in a deployed

@@ -12,14 +12,23 @@ import SwiftUI
 struct TaskInstructionView: View {
     let task: Study.Task
     let userDisplayableCurrentTaskIdx: Int
+    /// Skips the task, or `nil` while the task cannot be skipped.
+    var onSkip: (@MainActor () -> Void)?
+    /// Whether skipping has to wait, e.g. for an answer that is still arriving.
+    var isSkipDisabled = false
     /// Called when the sheet should be dismissed
     let onDismiss: @MainActor () -> Void
 
+    @State private var isConfirmingSkip = false
+
     var body: some View {
         BottomSheet {
-            Group {
+            VStack(spacing: 0) {
                 if let instructions = task.instructions {
                     instructionsText(for: instructions)
+                }
+                if let onSkip {
+                    skipButton(onSkip)
                 }
             }
             .navigationTitle("Task \(userDisplayableCurrentTaskIdx)")
@@ -65,5 +74,27 @@ struct TaskInstructionView: View {
             .background(Color(UIColor.secondarySystemGroupedBackground))
             .cornerRadius(10)
             .padding()
+    }
+
+    /// Lets a participant past a task that does not apply to them, which otherwise only an answer from the chat does.
+    private func skipButton(_ onSkip: @escaping @MainActor () -> Void) -> some View {
+        Button {
+            isConfirmingSkip = true
+        } label: {
+            Text("Skip This Task")
+                .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.capsule)
+        .controlSize(.large)
+        .disabled(isSkipDisabled)
+        .padding([.horizontal, .bottom])
+        // Named, because the next task's sheet looks the same and offers the same button.
+        .alert("Skip Task \(userDisplayableCurrentTaskIdx)?", isPresented: $isConfirmingSkip) {
+            Button("Skip Task", action: onSkip)
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Skip a task only if it does not apply to you or you already asked about it. You cannot go back.")
+        }
     }
 }

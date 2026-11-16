@@ -92,6 +92,11 @@ struct StudyChatView: View {
                         scheduleAssistantResponseGeneration()
                     }
                 }
+                // A Retry left over from the previous task would ask its question again, and its answer would count
+                // towards the new task.
+                .onChange(of: model.currentTaskIdx) { _, _ in
+                    generationError = nil
+                }
                 .onChange(of: model.llmSession.state) { _, newValue in
                     if case .error(let error) = newValue {
                         AppDiagnostics.chat.logError(error, context: "LLM session state")
@@ -183,9 +188,22 @@ struct StudyChatView: View {
     @ViewBuilder
     private func taskInstructionSheet() -> some View {
         if let task = model.currentTask, let taskIdx = model.userDisplayableCurrentTaskIdx {
-            TaskInstructionView(task: task, userDisplayableCurrentTaskIdx: taskIdx) {
-                model.presentedSheet = nil
-            }
+            TaskInstructionView(
+                task: task,
+                userDisplayableCurrentTaskIdx: taskIdx,
+                onSkip: model.isCurrentTaskSkippable ? skipCurrentTask : nil,
+                isSkipDisabled: model.isProcessing,
+                onDismiss: { model.presentedSheet = nil }
+            )
+            // The next task's instructions replace these in the same sheet; a fresh view shows that something changed.
+            .id(task.id)
+        }
+    }
+
+    private func skipCurrentTask() {
+        model.skipCurrentTask()
+        if let taskIdx = model.userDisplayableCurrentTaskIdx {
+            AccessibilityNotification.Announcement("Task \(taskIdx)").post()
         }
     }
 }

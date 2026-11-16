@@ -129,6 +129,21 @@ struct StudyTests {
         #expect(chatting.map(\.hasChat) == [true, true])
     }
 
+    /// A SpineAI chat task that does not apply to the participant can be skipped; the closing questionnaires cannot,
+    /// and no other study changes how its sessions run.
+    @Test
+    func onlySpineAIChatTasksCanBeSkipped() {
+        let tasks = Study.spineAI.tasks
+        let skippable = tasks.filter(\.isSkippable)
+        #expect(skippable.map(\.id) == ["0", "1", "2", "3", "4", "5", "6"])
+        let skippableTasksHaveChat = skippable.allSatisfy(\.hasChat)
+        #expect(skippableTasksHaveChat)
+
+        let otherTasks = Study.allStudies.filter { $0.id != Study.spineAI.id }.flatMap(\.tasks)
+        let otherStudiesSkip = otherTasks.contains(where: \.isSkippable)
+        #expect(!otherStudiesSkip)
+    }
+
     /// Free-text answers have room for several lines, and a line break alone only blocks an answer that is required.
     @Test
     func freeTextQuestionsAreMultiline() {

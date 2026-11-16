@@ -202,13 +202,25 @@ extension StudyReport {
             fileprivate let completedAt: Date
             private let duration: TimeInterval
             private let questions: [SurveyQuestion]
-            
-            public init(taskId: String, startedAt: Date, completedAt: Date, duration: TimeInterval, questions: [SurveyQuestion]) {
+            /// Whether the participant skipped the task, so its questions went unanswered on purpose.
+            ///
+            /// Reports from before tasks could be skipped have no such key.
+            private let skipped: Bool
+
+            public init(
+                taskId: String,
+                startedAt: Date,
+                completedAt: Date,
+                duration: TimeInterval,
+                questions: [SurveyQuestion],
+                skipped: Bool
+            ) {
                 self.taskId = taskId
                 self.startedAt = startedAt
                 self.completedAt = completedAt
                 self.duration = duration
                 self.questions = questions
+                self.skipped = skipped
             }
         }
 

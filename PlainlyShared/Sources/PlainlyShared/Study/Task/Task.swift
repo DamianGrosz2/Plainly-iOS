@@ -22,6 +22,11 @@ extension Study {
         
         public let assistantMessagesLimit: ClosedRange<Int>?
 
+        /// Whether a participant may skip the task, e.g. because it does not apply to them.
+        ///
+        /// A skipped task ends without its chat or its questions, and the report marks it as skipped.
+        public let isSkippable: Bool
+
         /// The questions contained in this task
         public let questions: [Questionnaire.Task]
 
@@ -38,12 +43,14 @@ extension Study {
             title: String? = nil,
             instructions: String?,
             assistantMessagesLimit: ClosedRange<Int>? = nil,
+            isSkippable: Bool = false,
             questions: [Questionnaire.Task]
         ) {
             self.id = id
             self.title = title
             self.instructions = instructions
             self.assistantMessagesLimit = assistantMessagesLimit
+            self.isSkippable = isSkippable
             self.questions = questions
         }
     }
