@@ -1,0 +1,24 @@
+PlainlyShared/Sources/PlainlyShared/Study/Task/QuestionnaireTask+Plainly.swift
+  s_2659ef1c52dec2::t_7f51f76075021f 28-29
+  s_2659ef1c52dec2::t_86c9a4a0896401 27
+  s_2659ef1c52dec2::t_6bbb24580508a7 31-34,37
+PlainlyShared/Tests/PlainlySharedTests/StudyTests.swift
+  s_2659ef1c52dec2::t_7a3bf312f4b813 132-147
+  s_2659ef1c52dec2::t_ef39949f68602b 148-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9f12c5cde6ac4d86d18ef070915edc51fd1a693f",
+  "prompts": {},
+  "sessions": {
+    "s_2659ef1c52dec2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a3eac002-121e-4c49-bd0d-baa16dc4520c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Damian Gross <grosdamian@gmail.com>"
+    }
+  }
+}
