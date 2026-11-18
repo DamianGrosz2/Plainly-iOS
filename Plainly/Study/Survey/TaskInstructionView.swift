@@ -82,13 +82,13 @@ struct TaskInstructionView: View {
             isConfirmingSkip = true
         } label: {
             Text("Skip This Task")
-                .frame(maxWidth: .infinity)
+                .font(.subheadline)
+                .foregroundStyle(Color(isSkipDisabled ? UIColor.tertiaryLabel : UIColor.secondaryLabel))
+                .frame(minHeight: 44)
         }
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.capsule)
-        .controlSize(.large)
+        .buttonStyle(.borderless)
         .disabled(isSkipDisabled)
-        .padding([.horizontal, .bottom])
+        .padding(.bottom)
         // Named, because the next task's sheet looks the same and offers the same button.
         .alert("Skip Task \(userDisplayableCurrentTaskIdx)?", isPresented: $isConfirmingSkip) {
             Button("Skip Task", action: onSkip)
